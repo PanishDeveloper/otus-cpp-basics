@@ -7,4 +7,6 @@ set(CMAKE_CXX_STANDARD 17)
 add_executable(gues_the_number
         main.cpp
         game.cpp
-        game.h)
+        game.h
+        high_scores.h
+        high_scores.cpp)

@@ -22,11 +22,11 @@ bool Game::makeGuess(int guess) {
     attempts++;
 
     if (guess < targetNumber) {
-        cout << "The hidden number is bigger!\n";
+        cout << "The hidden number is bigger than " << guess << "!\n";
         return false;
     }
     else if (guess > targetNumber) {
-        cout << "The hidden number is smaller!\n";
+        cout << "The hidden number is smaller than " << guess << "!\n";
         return false;
     }
     else {

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <limits>
 #include "game.h"
+#include "high_scores.h"
 
 using namespace std;
 
@@ -8,10 +9,14 @@ void PlayGame() {
     Game game;
     game.startNewGame();
 
+    string playerName;
+    cout << "Enter your name: ";
+    cin >> playerName;
+
     int num;
     bool guessed = false;
 
-    cout << "Welcome to the 'Guess the number' game! ";
+    cout << playerName << ", welcome to the 'Guess the number' game! ";
     cout << "I'm thinking of a number between 1 and " << game.getMaxValue() << ".\n";
 
     while (!guessed) {
@@ -32,6 +37,11 @@ void PlayGame() {
         }
         guessed = game.makeGuess(num);
     }
+
+    // Saving the result
+    HighScores::addScore(playerName, game.getAttempts());
+    // Showing the high score table
+    HighScores::printScores();
 }
 
 int main()
@@ -40,13 +50,14 @@ int main()
     do {
         cout << "\n===MENU===\n";
         cout << "1. New Game.\n";
-        cout << "2. Exit.\n";
+        cout << "2. View High Scores.\n";
+        cout << "3. Exit.\n";
         cout << "\nEnter your choice: ";
         cin >> choice;
         cout << endl;
 
         if (cin.fail()) {
-            cout << "Invalid input! Please enter 1 or 2.\n\n";
+            cout << "Invalid input! Please enter 1, 2 or 3.\n\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
@@ -57,11 +68,14 @@ int main()
             case 1:
                 PlayGame();
                 break;
-            case 2:
+        case 2:
+                HighScores::printScores();
+                break;
+            case 3:
                 cout << "Thanks for playing! Goodbye!\n";
                 break;
             default:
-                cout << "Invalid input! Please enter 1 or 2.\n\n";
+                cout << "Invalid input! Please enter 1, 2 or 3.\n\n";
         }
-    } while (choice != 2);
+    } while (choice != 3);
 }
