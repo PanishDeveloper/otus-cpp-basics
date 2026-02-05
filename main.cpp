@@ -1,12 +1,64 @@
 #include <iostream>
 #include <limits>
+#include <string>
 #include "game.h"
 #include "high_scores.h"
 
 using namespace std;
 
-void PlayGame() {
+// Prints the help message with program usage instructions
+void PrintUsage() {
+    cout << "Usage:\n guess_the_number[options]\n";
+    cout << "Options:\n -max <value> Set maximum number to guess (default 100)\n";
+    cout << " -table                 Show high scores and exit\n";
+}
+
+// A functions for parsing command line arguments
+bool ParseArguments(int argc, char* argv[], int& maxValue, bool& showTableOnly) {
+    // Default value
+    maxValue = 100;
+    showTableOnly = false;
+
+    if (argc == 1) {
+        return true;
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-table") {
+            showTableOnly = true;
+        }
+        else if (arg == "-max") {
+            if (i + 1 < argc) {
+                try {
+                    maxValue = stoi(argv[i + 1]);
+                    if (maxValue <= 0) {
+                        cout << "Error: max value must be positive\n";
+                        return false;
+                    }
+                    i++;
+                } catch (const exception&) {
+                    cout << "Error: invalid value for -max\n";
+                    return false;
+                }
+            }
+            else {
+                cout << "Error: -max requires a value\n";
+                return false;
+            }
+        }
+        else {
+            cout << "Error: unknown argument '" << arg << "'\n";
+            PrintUsage();
+            return false;
+        }
+    }
+    return true;
+}
+
+void PlayGame(int maxValue) {
     Game game;
+    game.setMaxValue(maxValue);
     game.startNewGame();
 
     string playerName;
@@ -44,8 +96,19 @@ void PlayGame() {
     HighScores::printScores();
 }
 
-int main()
-{
+int main(int argc, char* argv[]) {
+    int maxValue;
+    bool showTableOnly;
+
+    if (!ParseArguments(argc, argv, maxValue, showTableOnly)) {
+        return 1;
+    }
+
+    if (showTableOnly) {
+        HighScores::printScores();
+        return 0;
+    }
+
     int choice;
     do {
         cout << "\n===MENU===\n";
@@ -66,7 +129,7 @@ int main()
         switch (choice)
         {
             case 1:
-                PlayGame();
+                PlayGame(maxValue);
                 break;
         case 2:
                 HighScores::printScores();
