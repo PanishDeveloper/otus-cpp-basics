@@ -1,0 +1,87 @@
+#include "argument.h"
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+// Prints the help message with program usage instructions
+void PrintUsage() {
+    cout << "Usage:\n guess_the_number[options]\n";
+    cout << "Options:\n -max <value>   Set maximum number to guess (default 100)\n";
+    cout << " -table         Show high scores and exit\n";
+    cout << " -level <1|2|3> Set difficulty level (1:10, 2:50, 3:100)\n";
+    cout << "                Note: -max and -level cannot be used together\n";
+}
+
+// A functions for parsing command line arguments
+bool ParseArguments(int argc, char* argv[], int& maxValue, bool& showTableOnly, bool& useLevel) {
+    // Default value
+    maxValue = 100;
+    showTableOnly = false;
+    useLevel = false;
+    bool hasMax = false;
+
+    if (argc == 1) {
+        return true;
+    }
+
+    for (int i = 1; i < argc; ++i) {
+        string arg = argv[i];
+        if (arg == "-table") {
+            showTableOnly = true;
+        }
+        else if (arg == "-max") {
+            hasMax = true;
+            if (i + 1 < argc) {
+                try {
+                    maxValue = stoi(argv[i + 1]);
+                    if (maxValue <= 0) {
+                        cout << "Error: max value must be positive\n";
+                        return false;
+                    }
+                    i++;
+                } catch (const exception&) {
+                    cout << "Error: invalid value for -max\n";
+                    return false;
+                }
+            }
+            else {
+                cout << "Error: -max requires a value\n";
+                return false;
+            }
+        }
+        else if (arg == "-level") {
+            if (useLevel) {
+                cout << "Error: -level already specified\n";
+                return false;
+            }
+            useLevel = true;
+            if (i + 1 < argc) {
+                try {
+                    int level = stoi(argv[i + 1]);
+                    if (level == 1) { maxValue = 10; }
+                    else if (level == 2) { maxValue = 50; }
+                    else if (level == 3) { maxValue = 100; }
+                    else {
+                        cout << "Error: level must be 1, 2 or 3\n";
+                        return false;
+                    }
+                    i++;
+                } catch (const exception&) {
+                    cout << "Error: invalid value for -level\n";
+                    return false;
+                }
+            }
+        }
+        else {
+            cout << "Error: unknown argument '" << arg << "'\n";
+            PrintUsage();
+            return false;
+        }
+        if (hasMax && useLevel) {
+            cout << "Error: -max and -level cannot be used together\n";
+            return false;
+        }
+    }
+    return true;
+}

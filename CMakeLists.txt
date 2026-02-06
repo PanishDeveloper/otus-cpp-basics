@@ -9,4 +9,6 @@ add_executable(guess_the_number
         game.cpp
         game.h
         high_scores.h
-        high_scores.cpp)
+        high_scores.cpp
+        argument.h
+        argument.cpp)
