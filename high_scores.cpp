@@ -4,24 +4,66 @@
 
 using namespace std;
 
-const string HIGH_SCORES_FILE = "high_scores.txt";
-static vector<ScoreRecord> scores;
+string HighScores::HIGH_SCORES_FILE = "high_scores.txt";
+vector<ScoreRecord> HighScores::scores;
 
 void HighScores::addScore(const string& name, int attempts) {
     scores.push_back({name, attempts});
     saveToFile();
 }
 
-vector<ScoreRecord> HighScores::getScores() {
+void HighScores::addOrUpdateScore(const string& name, int attempts) {
     loadFromFile();
-    return scores;
+    bool updated = false;
+
+    // We are looking for an existing record for this player
+    for (auto& record : scores) {
+        if (record.name == name) {
+            if (attempts < record.attempts) {
+                record.attempts = attempts;
+                cout << "Congratulations! You beat your previous record of " << record.attempts << " attempts.\n";
+            }
+            updated = true;
+            break;
+        }
+    }
+
+    // If there was no record, add a new one
+    if (!updated) {
+        scores.push_back({name, attempts});
+    }
+    saveToFile();
+}
+
+map<std::string, int> HighScores::getBetScores() {
+    loadFromFile();
+    map <string, int> bestScores;
+
+    for (const auto& record : scores) {
+        // If the player is not in the map yer or his result is better (fewer attemps)
+        if (bestScores.find(record.name) == bestScores.end() || record.attempts < bestScores[record.name]) {
+            bestScores[record.name] = record.attempts;
+        }
+    }
+    return bestScores;
 }
 
 void HighScores::printScores() {
-    loadFromFile();
+    auto bestScores = getBetScores();
+
+    if (bestScores.empty()) {
+        cout << "=== HIGH SCORES ===\nNo scores yet. Be the first!\n";
+        return;
+    }
+
+    vector<pair<string, int>> sortedScores(bestScores.begin(), bestScores.end());
+    sort(sortedScores.begin(), sortedScores.end(),
+        [](const pair<string, int>& a, const pair<string, int>& b) {return a.second < b.second;});
+
     cout << "=== HIGH SCORES ===\n";
-    for (const auto& record : scores) {
-        cout << record.name << ":" << record.attempts << endl;
+    cout << "Player\t   Attempts\n===================\n";
+    for (const auto& [name, attempts] : sortedScores) {
+        cout << name << "\t\t" << attempts << endl;
     }
 }
 
