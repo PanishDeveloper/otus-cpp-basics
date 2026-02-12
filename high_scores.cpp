@@ -6,6 +6,7 @@ using namespace std;
 
 string HighScores::HIGH_SCORES_FILE = "high_scores.txt";
 vector<ScoreRecord> HighScores::scores;
+bool HighScores::isLoaded = false;
 
 void HighScores::addScore(const string& name, int attempts) {
     scores.push_back({name, attempts});
@@ -13,15 +14,17 @@ void HighScores::addScore(const string& name, int attempts) {
 }
 
 void HighScores::addOrUpdateScore(const string& name, int attempts) {
-    loadFromFile();
+    ensureLoaded();
     bool updated = false;
 
     // We are looking for an existing record for this player
     for (auto& record : scores) {
         if (record.name == name) {
             if (attempts < record.attempts) {
+                int oldRecord = record.attempts;
                 record.attempts = attempts;
-                cout << "Congratulations! You beat your previous record of " << record.attempts << " attempts.\n";
+                cout << "Congratulations! You beat your previous record of " << oldRecord << " attempts.";
+                cout << " The new record is " << record.attempts << " attempts.\n";
             }
             updated = true;
             break;
@@ -32,11 +35,10 @@ void HighScores::addOrUpdateScore(const string& name, int attempts) {
     if (!updated) {
         scores.push_back({name, attempts});
     }
-    saveToFile();
 }
 
-map<std::string, int> HighScores::getBetScores() {
-    loadFromFile();
+map<std::string, int> HighScores::getBestScores() {
+    ensureLoaded();
     map <string, int> bestScores;
 
     for (const auto& record : scores) {
@@ -49,7 +51,8 @@ map<std::string, int> HighScores::getBetScores() {
 }
 
 void HighScores::printScores() {
-    auto bestScores = getBetScores();
+    ensureLoaded();
+    auto bestScores = getBestScores();
 
     if (bestScores.empty()) {
         cout << "=== HIGH SCORES ===\nNo scores yet. Be the first!\n";
@@ -92,4 +95,12 @@ void HighScores::loadFromFile() {
 
 void HighScores::clear() {
     scores.clear();
+    isLoaded = true;
+}
+
+void HighScores::ensureLoaded() {
+    if (!isLoaded) {
+        loadFromFile();
+        isLoaded = true;
+    }
 }

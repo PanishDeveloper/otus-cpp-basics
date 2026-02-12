@@ -14,74 +14,102 @@ void PrintUsage() {
 }
 
 // A functions for parsing command line arguments
-bool ParseArguments(int argc, char* argv[], int& maxValue, bool& showTableOnly, bool& useLevel) {
-    // Default value
-    maxValue = 100;
-    showTableOnly = false;
-    useLevel = false;
-    bool hasMax = false;
+ParsedArgs ParseArguments(int argc, char* argv[]) {
+    ParsedArgs result;
 
     if (argc == 1) {
-        return true;
+        return result;
     }
 
     for (int i = 1; i < argc; ++i) {
         string arg = argv[i];
         if (arg == "-table") {
-            showTableOnly = true;
+            result.showTableOnly = true;
         }
         else if (arg == "-max") {
-            hasMax = true;
+            result.hasMax = true;
             if (i + 1 < argc) {
                 try {
-                    maxValue = stoi(argv[i + 1]);
-                    if (maxValue <= 0) {
-                        cout << "Error: max value must be positive\n";
-                        return false;
+                    result.maxValue = stoi(argv[i + 1]);
+                    if (result.maxValue <= 0) {
+                        result.error = true;
+                        result.errorMessage = "Error: max value must be positive\n";
+                        return result;
                     }
                     i++;
                 } catch (const exception&) {
-                    cout << "Error: invalid value for -max\n";
-                    return false;
+                    result.error = true;
+                    result.errorMessage = "Error: invalid value for -max\n";
+                    return result;
                 }
             }
             else {
-                cout << "Error: -max requires a value\n";
-                return false;
+                result.error = true;
+                result.errorMessage = "Error: -max requires a value\n";
+                return result;
             }
         }
         else if (arg == "-level") {
-            if (useLevel) {
-                cout << "Error: -level already specified\n";
-                return false;
-            }
-            useLevel = true;
+            result.hasLevel = true;
             if (i + 1 < argc) {
                 try {
-                    int level = stoi(argv[i + 1]);
-                    if (level == 1) { maxValue = 10; }
-                    else if (level == 2) { maxValue = 50; }
-                    else if (level == 3) { maxValue = 100; }
-                    else {
-                        cout << "Error: level must be 1, 2 or 3\n";
-                        return false;
+                    result.level = stoi(argv[i + 1]);
+                    if (result.level < 1 || result.level > 3) {
+                        result.error = true;
+                        result.errorMessage = "Error: level must be between 1 and 3\n";
+                        return result;
                     }
                     i++;
                 } catch (const exception&) {
-                    cout << "Error: invalid value for -level\n";
-                    return false;
+                    result.error = true;
+                    result.errorMessage = "Error: invalid value for -level\n";
+                    return result;
                 }
+            }
+            else {
+                result.error = true;
+                result.errorMessage = "Error: -level requires a value\n";
+                return result;
             }
         }
         else {
-            cout << "Error: unknown argument '" << arg << "'\n";
-            PrintUsage();
-            return false;
+            result.error = true;
+            result.errorMessage = "Error: unknown argument '" + arg + "'\n";
+            return result;
         }
-        if (hasMax && useLevel) {
-            cout << "Error: -max and -level cannot be used together\n";
+    }
+    return result;
+}
+
+bool ValidateArguments(const ParsedArgs& args, int& maxValue, bool& showTableOnly) {
+    if (args.error) {
+        cout << args.errorMessage << endl;
+        PrintUsage();
+        return false;
+    }
+
+    // Checking for conflicts
+    if (args.hasMax && args.hasLevel) {
+        cout << "Error: -max and -level cannot be used together\n";
+        PrintUsage();
+        return false;
+    }
+
+    // Applying values
+    maxValue = args.maxValue;
+    showTableOnly = args.showTableOnly;
+
+    // Applying the difficult level
+    if (args.hasLevel) {
+        switch (args.level) {
+            case 1: maxValue = 10; break;
+            case 2: maxValue = 50; break;
+            case 3: maxValue = 100; break;
+            default:
+                cout << "Error: invalid level value\n";
             return false;
         }
     }
+
     return true;
 }

@@ -7,6 +7,17 @@
 
 using namespace std;
 
+bool readIn(int& value, int min, int max) {
+    cin >> value;
+    if (cin.fail() || value < min || value > max) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        return false;
+    }
+
+    return true;
+}
+
 void PlayGame(int maxValue) {
     Game game;
     game.setMaxValue(maxValue);
@@ -14,7 +25,8 @@ void PlayGame(int maxValue) {
 
     string playerName;
     cout << "Enter your name: ";
-    cin >> playerName;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    getline(cin, playerName);
 
     int num;
     bool guessed = false;
@@ -24,18 +36,10 @@ void PlayGame(int maxValue) {
 
     while (!guessed) {
         cout << "\nEnter a number from 1 and to " << game.getMaxValue() << ": ";
-        cin >> num;
 
         // Checking the correctness of the input
-        if (cin.fail()) {
-            cout << "You didn't enter a number!\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-            continue;
-        }
-
-        if (num < 1 || num > game.getMaxValue()) {
-            cout << "Please enter a number between 1 and " << game.getMaxValue() << "!\n";
+        if (!readIn(num, 1, game.getMaxValue())) {
+            cout << "Invalid input! Please enter a number between 1 and " << game.getMaxValue() << ".\n";
             continue;
         }
         guessed = game.makeGuess(num);
@@ -50,9 +54,9 @@ void PlayGame(int maxValue) {
 int main(int argc, char* argv[]) {
     int maxValue;
     bool showTableOnly;
-    bool useLevel;
 
-    if (!ParseArguments(argc, argv, maxValue, showTableOnly, useLevel)) {
+    ParsedArgs parsedArgs = ParseArguments(argc, argv);
+    if (!ValidateArguments(parsedArgs, maxValue, showTableOnly)) {
         return 1;
     }
 
@@ -68,13 +72,9 @@ int main(int argc, char* argv[]) {
         cout << "2. View High Scores.\n";
         cout << "3. Exit.\n";
         cout << "\nEnter your choice: ";
-        cin >> choice;
-        cout << endl;
 
-        if (cin.fail()) {
+        if (!readIn(choice, 1, 3)) {
             cout << "Invalid input! Please enter 1, 2 or 3.\n\n";
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             continue;
         }
 
@@ -93,6 +93,8 @@ int main(int argc, char* argv[]) {
                 cout << "Invalid input! Please enter 1, 2 or 3.\n\n";
         }
     } while (choice != 3);
+
+    HighScores::saveToFile();
 
     return 0;
 }
