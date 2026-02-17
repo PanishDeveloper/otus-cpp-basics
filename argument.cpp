@@ -4,6 +4,28 @@
 
 using namespace std;
 
+bool ParseIntArgument(const string& currentArg, const string& nextArg, int& outValue, const string& argName,
+                          int minValue, int maxValue, string& errorMessage) {
+    if (nextArg.empty()) {
+        errorMessage = "Error: " + argName + " requires a value\n";
+        return false;
+    }
+
+    try {
+        outValue = stoi(nextArg);
+        if (outValue < minValue || outValue > maxValue) {
+            errorMessage = "Error: " + argName + " value must be between " +
+                          to_string(minValue) + " and " + to_string(maxValue) + "\n";
+            return false;
+        }
+        return true;
+    } catch (const exception&) {
+        errorMessage = "Error: invalid value for " + argName + "\n";
+        return false;
+    }
+}
+
+
 // Prints the help message with program usage instructions
 void PrintUsage() {
     cout << "Usage:\n guess_the_number[options]\n";
@@ -28,47 +50,33 @@ ParsedArgs ParseArguments(int argc, char* argv[]) {
         }
         else if (arg == "-max") {
             result.hasMax = true;
+
+            string nextArg;
             if (i + 1 < argc) {
-                try {
-                    result.maxValue = stoi(argv[i + 1]);
-                    if (result.maxValue <= 0) {
-                        result.error = true;
-                        result.errorMessage = "Error: max value must be positive\n";
-                        return result;
-                    }
-                    i++;
-                } catch (const exception&) {
-                    result.error = true;
-                    result.errorMessage = "Error: invalid value for -max\n";
-                    return result;
-                }
+                nextArg = argv[i + 1];
             }
-            else {
+
+            if (ParseIntArgument(arg, nextArg, result.maxValue, "-max",
+                1, 1000000, result.errorMessage)) {
+                i++;
+            } else {
                 result.error = true;
-                result.errorMessage = "Error: -max requires a value\n";
                 return result;
             }
         }
         else if (arg == "-level") {
             result.hasLevel = true;
+
+            string nextArg;
             if (i + 1 < argc) {
-                try {
-                    result.level = stoi(argv[i + 1]);
-                    if (result.level < 1 || result.level > 3) {
-                        result.error = true;
-                        result.errorMessage = "Error: level must be between 1 and 3\n";
-                        return result;
-                    }
-                    i++;
-                } catch (const exception&) {
-                    result.error = true;
-                    result.errorMessage = "Error: invalid value for -level\n";
-                    return result;
-                }
+                nextArg = argv[i + 1];
             }
-            else {
+
+            if (ParseIntArgument(arg, nextArg, result.level, "-level",
+                1, 3, result.errorMessage)) {
+                i++; // пропускаем значение аргумента
+            } else {
                 result.error = true;
-                result.errorMessage = "Error: -level requires a value\n";
                 return result;
             }
         }
