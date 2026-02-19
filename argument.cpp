@@ -4,23 +4,23 @@
 
 using namespace std;
 
-bool ParseIntArgument(const string& currentArg, const string& nextArg, int& outValue, const string& argName,
+bool ParseIntArgument(const string& currentArg, const string& nextArg, int& outValue,
                           int minValue, int maxValue, string& errorMessage) {
     if (nextArg.empty()) {
-        errorMessage = "Error: " + argName + " requires a value\n";
+        errorMessage = "Error: " + currentArg + " requires a value\n";
         return false;
     }
 
     try {
         outValue = stoi(nextArg);
         if (outValue < minValue || outValue > maxValue) {
-            errorMessage = "Error: " + argName + " value must be between " +
+            errorMessage = "Error: " + currentArg + " value must be between " +
                           to_string(minValue) + " and " + to_string(maxValue) + "\n";
             return false;
         }
         return true;
     } catch (const exception&) {
-        errorMessage = "Error: invalid value for " + argName + "\n";
+        errorMessage = "Error: invalid value for " + currentArg + "\n";
         return false;
     }
 }
@@ -56,7 +56,7 @@ ParsedArgs ParseArguments(int argc, char* argv[]) {
                 nextArg = argv[i + 1];
             }
 
-            if (ParseIntArgument(arg, nextArg, result.maxValue, "-max",
+            if (ParseIntArgument(arg, nextArg, result.maxValue,
                 1, 1000000, result.errorMessage)) {
                 i++;
             } else {
@@ -72,7 +72,7 @@ ParsedArgs ParseArguments(int argc, char* argv[]) {
                 nextArg = argv[i + 1];
             }
 
-            if (ParseIntArgument(arg, nextArg, result.level, "-level",
+            if (ParseIntArgument(arg, nextArg, result.level,
                 1, 3, result.errorMessage)) {
                 i++; // пропускаем значение аргумента
             } else {

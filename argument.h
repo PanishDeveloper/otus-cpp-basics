@@ -13,5 +13,5 @@ struct ParsedArgs {
 ParsedArgs ParseArguments(int argc, char* argv[]);
 void PrintUsage();
 bool ValidateArguments(const ParsedArgs& args, int& maxValue, bool& showTableOnly);
-bool ParseIntArgument(const std::string& currentArg, const std::string& nextArg, int& outValue, const std::string& argName,
+bool ParseIntArgument(const std::string& currentArg, const std::string& nextArg, int& outValue,
                           int minValue, int maxValue, std::string& errorMessage);
