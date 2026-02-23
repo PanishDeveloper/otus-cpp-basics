@@ -1,23 +1,24 @@
 #include "statistics.h"
 #include <iostream>
+#include <memory>
 
 int main()
 {
-    std::vector<IStatistics*> statistics = {
-        new Min(),
-        new Max(),
-        new Mean(),
-        new StandardDeviation(),
-        new Pct90(),
-        new Pct95()
-    };
+    std::vector<std::unique_ptr<IStatistics>> statistics;
+
+    statistics.emplace_back(std::make_unique<Min>());
+    statistics.emplace_back(std::make_unique<Max>());
+    statistics.emplace_back(std::make_unique<Mean>());
+    statistics.emplace_back(std::make_unique<StandardDeviation>());
+    statistics.emplace_back(std::make_unique<Pct90>());
+    statistics.emplace_back(std::make_unique<Pct95>());
 
     std::cout << "Enter numbers (Ctrl+D to finnish):\n";
 
     double val;
     while (std::cin >> val)
     {
-        for (auto* stat : statistics) { stat->update(val); }
+        for (const auto& stat : statistics) { stat->update(val); }
     }
 
     std::cout << std::endl;
@@ -25,11 +26,10 @@ int main()
     if (!std::cin.eof() && !std::cin.good())
     {
         std::cerr << "\nInvalid input.\n";
-        for (auto* stat : statistics) { delete stat; }
         return 1;
     }
 
-    for (auto* stat : statistics)
+    for (const auto& stat : statistics)
     {
         std::string stat_name = stat->name();
         try
@@ -41,8 +41,6 @@ int main()
             std::cout << stat_name << " = N/A\n";
         }
     }
-
-    for (auto* stat : statistics) { delete stat; }
 
     return 0;
 }
