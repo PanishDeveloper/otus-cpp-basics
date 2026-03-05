@@ -106,13 +106,15 @@ double PercentileBase::eval() const
         throw std::logic_error("No data for percentile calculation");
     }
 
-    std::vector<double> sorted = values;
-    std::sort(sorted.begin(), sorted.end());
+    std::vector<double> temp = values;
 
-    auto index = static_cast<size_t>(sorted.size() * m_percentile);
-    if (index >= sorted.size()) { index = sorted.size() - 1; }
+    auto index = static_cast<size_t>(temp.size() * m_percentile);
+    if (index >= temp.size()) { index = temp.size() - 1; }
 
-    return sorted[index];
+    auto nth = temp.begin() + static_cast<std::ptrdiff_t>(index);
+    std::nth_element(temp.begin(), nth, temp.end());
+
+    return temp[index];
 }
 
 std::string PercentileBase::name() const { return m_name_str; }
