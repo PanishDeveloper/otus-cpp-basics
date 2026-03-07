@@ -32,7 +32,7 @@ public:
         ++m_size;
     }
 
-    // PUSH_FRONT METHOD. Adds element to the brginning
+    // PUSH_FRONT METHOD. Adds element to the beginning
     void push_front(const T& value)
     {
         Node* new_node = new Node(value);
@@ -47,32 +47,6 @@ public:
         }
 
         ++m_size;
-    }
-
-    // INDEX OPERATOR. Access by index
-    T& operator[](size_t index)
-    {
-        if (index >= m_size)
-            throw std::out_of_range("Index out of range");
-
-        Node* current = m_head;
-        for (size_t i = 0; i < index; ++i)
-            current = current->next;
-
-        return current->data;
-    }
-
-    // Const version
-    const T& operator[](size_t index) const
-    {
-        if (index >= m_size)
-            throw std::out_of_range("Index out of range");
-
-        Node* current = m_head;
-        for (size_t i = 0; i < index; ++i)
-            current = current->next;
-
-        return current->data;
     }
 
     // INSERT NETHOD. Inserts element at specified position
@@ -131,7 +105,7 @@ public:
     }
 
     // SIZE METHOD.
-    size_t size() const { return m_size; }
+    [[nodiscard]]size_t size() const { return m_size; }
 
     // CLEAR METHOD.
     void clear()
@@ -150,7 +124,33 @@ public:
     }
 
     // EMPTY METHOD.
-    bool empty() const { return m_size == 0; }
+    [[nodiscard]]bool empty() const { return m_size == 0; }
+
+    // INDEX OPERATOR. Access by index
+    T& operator[](size_t index)
+    {
+        if (index >= m_size)
+            throw std::out_of_range("Index out of range");
+
+        Node* current = m_head;
+        for (size_t i = 0; i < index; ++i)
+            current = current->next;
+
+        return current->data;
+    }
+
+    // Const version
+    const T& operator[](size_t index) const
+    {
+        if (index >= m_size)
+            throw std::out_of_range("Index out of range");
+
+        Node* current = m_head;
+        for (size_t i = 0; i < index; ++i)
+            current = current->next;
+
+        return current->data;
+    }
 
 private:
     // STRUCT NODE

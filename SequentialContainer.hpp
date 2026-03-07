@@ -10,6 +10,14 @@ class SequentialContainer
 {
 public:
     SequentialContainer() : m_data(nullptr), m_size(0), m_capacity(0) {}
+
+    // Constructor with initial capacility
+    explicit SequentialContainer(size_t initial_capacity) : m_data(nullptr), m_size(0), m_capacity(0)
+    {
+        if (initial_capacity > 0)
+            reserve(initial_capacity);
+    }
+
     ~SequentialContainer() { delete[] m_data; }
 
     SequentialContainer(const SequentialContainer&) = delete;
@@ -20,9 +28,22 @@ public:
     {
         if (m_size == m_capacity)
         {
-            reserve(m_capacity == 0 ? 1 : m_capacity * 2);
+            size_t new_capacity = calculate_growth(m_capacity);
+            reserve(new_capacity);
         }
         m_data[m_size++] = value;
+    }
+
+    // ADDED: Calculate new capacity with growth factor
+    [[nodiscard]] static size_t calculate_growth(size_t current_capacity) noexcept
+    {
+        if (current_capacity == 0)
+            return 1;
+
+        auto new_capacity = static_cast<size_t>(current_capacity * 1.5);
+
+        return (new_capacity > current_capacity) ? new_capacity : current_capacity + 1;
+
     }
 
     // RESERVE METHOD. Allocates memory for future elements
@@ -34,7 +55,7 @@ public:
 
         for (size_t i = 0; i < m_size; ++i)
         {
-            new_data[i] = m_data[i];
+            new_data[i] = std::move(m_data[i]);
         }
 
         delete[] m_data;
@@ -42,6 +63,79 @@ public:
         m_data = new_data;
         m_capacity = new_capacity;
     }
+
+    // INSERT METHOD. Inserts element at specified position
+    void insert(size_t index, const T& value)
+    {
+        if (index > m_size)
+            throw std::out_of_range("Index out of range");
+
+        if (m_size == m_capacity)
+        {
+            size_t new_capacity = calculate_growth(m_capacity);
+            reserve(new_capacity);
+        }
+
+        for (size_t i = m_size; i > index; --i)
+            m_data[i] = std::move(m_data[i - 1]);
+
+        m_data[index] = value;
+        ++m_size;
+    }
+
+    // ADDED: Method to reduce capacity to fit current size
+    void shrink_to_fit()
+    {
+        if (m_size == m_capacity) return;
+
+        if (m_size == 0)
+        {
+            clear();
+            return;
+        }
+
+        // Create new array exactly for current size
+        T* new_data = new T[m_size];
+        for (size_t i = 0; i < m_size; ++i)
+            new_data[i] = std::move(m_data[i]);
+
+        delete[] m_data;
+        m_data = new_data;
+        m_capacity = m_size;
+    }
+
+    // ERASE METHOD. Removes element at specifies position
+    void erase(size_t index)
+    {
+        if (index >= m_size)
+            throw std::out_of_range("Index out of range");
+
+        for (size_t i = index; i < m_size - 1; ++i)
+            m_data[i] = std::move(m_data[i + 1]);
+
+        --m_size;
+    }
+
+    // SIZE MEHOD. Returns current number of elements
+    [[nodiscard]]size_t size() const { return m_size; }
+
+    // CLEAR METHOD. Removes all elements
+    void clear()
+    {
+        delete[] m_data;
+        m_data = nullptr;
+        m_size = 0;
+        m_capacity = 0;
+    }
+
+    // EMPTY METHOD. Check if container is empty
+    [[nodiscard]]bool empty() const { return m_size == 0; }
+
+    // CAPACITY METHOD. Returns allocated memory size
+    [[nodiscard]]size_t capacity() const { return m_capacity; }
+
+    // ADDED: Method to show memory efficience
+    [[nodiscard]]double load_factor() const { return m_capacity == 0 ? 1.0 : static_cast<double>(m_size) / m_capacity; }
 
     // INDEX OPERATOR. Access by index (non - const)
     T& operator[](size_t index)
@@ -58,52 +152,6 @@ public:
             throw std::out_of_range("Index out of range");
         return m_data[index];
     }
-
-    // INSERT METHOD. Inserts element at specified position
-    void insert(size_t index, const T& value)
-    {
-        if (index > m_size)
-            throw std::out_of_range("Index out of range");
-
-        if (index == m_size)
-            reserve(m_capacity == 0 ? 1 : m_capacity * 2);
-
-        for (size_t i = m_size; i > index; --i)
-            m_data[i] = m_data[i - 1];
-
-        m_data[index] = value;
-        ++m_size;
-    }
-
-    // ERASE METHOD. Removes element at specifies position
-    void erase(size_t index)
-    {
-        if (index >= m_size)
-            throw std::out_of_range("Index out of range");
-
-        for (size_t i = index; i < m_size - 1; ++i)
-            m_data[i] = m_data[i + 1];
-
-        --m_size;
-    }
-
-    // SIZE MEHOD. Returns current number of elements
-    size_t size() const { return m_size; }
-
-    // CLEAR METHOD. Removes all elements
-    void clear()
-    {
-        delete[] m_data;
-        m_data = nullptr;
-        m_size = 0;
-        m_capacity = 0;
-    }
-
-    // EMPTY METHOD. Check if container is empty
-    bool empty() const { return m_size == 0; }
-
-    // CAPACITY METHOD. Returns allocated memory size
-    size_t capacity() const { return m_capacity; }
 
 private:
     T* m_data;
