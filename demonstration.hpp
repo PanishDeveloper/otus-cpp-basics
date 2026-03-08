@@ -132,5 +132,5 @@ inline void showMenu()
     std::cout << "3. Test Singly Linked List\n";
     std::cout << "4. Exit\n";
     std::cout << "===================================================\n";
-    std::cout << "Enter you choice: ";
+    std::cout << "Enter your choice: ";
 }

@@ -19,7 +19,7 @@ public:
     // Method for getting the list type
     [[nodiscard]] std::string get_type() const { return "SinglyLinkedList"; }
 
-    // PUSH_BACK METHOD. Adds element to the end (O(n)
+    // PUSH_BACK METHOD. Adds element to the end O(n)
     void push_back(const T& value)
     {
         Node* new_node = new Node(value);
@@ -37,7 +37,7 @@ public:
         ++m_size;
     }
 
-    // PUSH_FRONT METHOD. Adds element to the beginning (O(1)
+    // PUSH_FRONT METHOD. Adds element to the beginning O(1)
     void push_front(const T& value)
     {
         Node* new_node = new Node(value);
