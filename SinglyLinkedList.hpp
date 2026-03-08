@@ -2,49 +2,47 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string>
 
-// Template class for doubly linked list
+// Template class for singly linked lis
 // Elements are not contiguous in memory
 template <typename T>
-class LinkedListContainer
+class SinglyLinkedList
 {
 public:
-    LinkedListContainer() : m_head(nullptr), m_tail(nullptr), m_size(0) {}
-    ~LinkedListContainer() { clear(); }
+    SinglyLinkedList() : m_head(nullptr), m_size(0) {}
+    ~SinglyLinkedList() { clear(); }
 
-    LinkedListContainer(const LinkedListContainer&) = delete;
-    LinkedListContainer& operator=(const LinkedListContainer&) = delete;
+    SinglyLinkedList(const SinglyLinkedList&) = delete;
+    SinglyLinkedList& operator=(const SinglyLinkedList&) = delete;
 
-    // PUSH_BACK METHOD. Adds element to the end
+    // Method for getting the list type
+    [[nodiscard]] std::string get_type() const { return "SinglyLinkedList"; }
+
+    // PUSH_BACK METHOD. Adds element to the end (O(n)
     void push_back(const T& value)
     {
         Node* new_node = new Node(value);
 
         if (m_head == nullptr)
-            m_head = m_tail = new_node;
+            m_head = new_node;
         else
         {
-            m_tail->next = new_node;
-            new_node->prev = m_tail;
-            m_tail = new_node;
+           Node* current = m_head;
+            while (current->next != nullptr) { current = current->next; }
+
+            current->next = new_node;
         }
 
         ++m_size;
     }
 
-    // PUSH_FRONT METHOD. Adds element to the beginning
+    // PUSH_FRONT METHOD. Adds element to the beginning (O(1)
     void push_front(const T& value)
     {
         Node* new_node = new Node(value);
-
-        if (m_head == nullptr)
-            m_head = m_tail = new_node;
-        else
-        {
-            new_node->next = m_head;
-            m_head->prev = new_node;
-            m_head = new_node;
-        }
+        new_node->next = m_head;
+        m_head = new_node;
 
         ++m_size;
     }
@@ -52,14 +50,8 @@ public:
     // INSERT NETHOD. Inserts element at specified position
     void insert(size_t index, const T& value)
     {
-        if (index >= m_size)
+        if (index > m_size)
             throw std::out_of_range("Index out of range");
-
-        if (index == m_size)
-        {
-            push_back(value);
-            return;
-        }
 
         if (index == 0)
         {
@@ -72,9 +64,8 @@ public:
             current = current->next;
 
         Node* new_node = new Node(value);
-        new_node->next = current;
-        current->prev->next = new_node;
-        current->prev = new_node;
+        new_node->next = current->next;
+        current->next = new_node;
 
         ++m_size;
     }
@@ -85,27 +76,28 @@ public:
         if (index >= m_size)
             throw std::out_of_range("Index out of range");
 
-        Node* to_delete = m_head;
-        for (size_t i = 0; i < index; ++i)
-            to_delete = to_delete->next;
-
-        // Redirect pointers
-        if (to_delete->prev)
-            to_delete->prev->next = to_delete->next;
+        if (index == 0)
+        {
+            Node* to_delete = m_head;
+            m_head = m_head->next;
+            delete to_delete;
+        }
         else
-            m_head = to_delete->next;
+        {
+            Node* current = m_head;
+            for (size_t i = 0; i < index - 1; ++i)
+                current = current->next;
 
-        if (to_delete->next)
-            to_delete->next->prev = to_delete->prev;
-        else
-            m_tail = to_delete->prev;
+            Node* to_delete = current->next;
+            current->next = to_delete->next;
+            delete to_delete;
+        }
 
-        delete to_delete;
         --m_size;
     }
 
     // SIZE METHOD.
-    [[nodiscard]]size_t size() const { return m_size; }
+    [[nodiscard]] size_t size() const { return m_size; }
 
     // CLEAR METHOD.
     void clear()
@@ -119,7 +111,6 @@ public:
             current = next;
         }
         m_head = nullptr;
-        m_tail = nullptr;
         m_size = 0;
     }
 
@@ -158,12 +149,10 @@ private:
     {
         T data;
         Node* next;
-        Node* prev;
 
-        explicit Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
+        explicit Node(const T& value) : data(value), next(nullptr) {}
     };
 
     Node* m_head;
-    Node* m_tail;
-    int m_size;
+    size_t m_size;
 };
