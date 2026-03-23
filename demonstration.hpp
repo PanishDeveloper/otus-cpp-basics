@@ -122,6 +122,136 @@ void testContainer(Container& container, const std::string& containerType)
     std::cout << "===================================================\n";
 }
 
+// Class for demonstrating move semantics
+class TestObject
+{
+public:
+    TestObject() : m_name("default"), m_big_data(nullptr)
+    {
+        std::cout << "[LIFECYCLE] TestObject default created\n";
+    }
+
+    TestObject(std::string name) : m_name(std::move(name))
+    {
+        m_big_data = new int[1000];
+        std::cout << "[LIFECYCLE] TestObject created: " << m_name << "\n";
+    }
+
+    TestObject(const TestObject& other) : m_name(other.m_name + " (copy)")
+    {
+        m_big_data = new int[1000];
+        for (int i = 0; i < 1000; ++i)
+            m_big_data[i] = other.m_big_data[i];
+        std::cout << "[LIFECYCLE] TestObject COPIED: " << m_name << " (EXPENSIVE!)\n";
+    }
+
+    TestObject(TestObject&& other) noexcept : m_name(std::move(other.m_name) + " (moved)")
+    {
+        m_big_data = other.m_big_data;
+        other.m_big_data = nullptr;
+        std::cout << "[LIFECYCLE] TestObject MOVED: " << m_name << " (CHEAP!)\n";
+    }
+
+    // Copy assignment operator using copy-and-swap
+    TestObject& operator= (const TestObject& other)
+    {
+        std::cout << "[LIFECYCLE] TestObject COPY ASSIGNMENT\n";
+        if (this != &other)
+        {
+            TestObject temp(other);
+            swap(temp);
+        }
+
+        return *this;
+    }
+
+    // Move assignment operator using swap
+    TestObject& operator= (TestObject&& other) noexcept
+    {
+        std::cout << "[LIFECYCLE] TestObject MOVE ASSIGNMENT\n";
+        if (this != &other)
+        {
+            swap(other);
+        }
+
+        return *this;
+    }
+
+    void swap(TestObject& other) noexcept
+    {
+        std::swap(m_name, other.m_name);
+        std::swap(m_big_data, other.m_big_data);
+    }
+
+    ~TestObject()
+    {
+            delete[] m_big_data;
+        std::cout << "[LIFECYCLE] TestObject destroyed: " << m_name << "\n";
+    }
+
+    friend std::ostream& operator<< (std::ostream& os, const TestObject& obj)
+    {
+        os << obj.m_name;
+        return os;
+    }
+
+private:
+    std::string m_name;
+    int* m_big_data;
+};
+
+// Function to demonstrate move semantics
+inline void demonstrateMoveSemantics()
+{
+    std::cout << "\n========== MOVE SEMANTICS DEMONSTRATION ==========\n";
+
+    SequentialContainer<TestObject> container;
+
+    std::cout << "\n1. Adding with l-value (copying):\n";
+    TestObject obj1("Object 1");
+    container.push_back(obj1);
+
+    std::cout << "\n2. Adding with r-value (moving):\n";
+    container.push_back(TestObject("Object 2"));
+
+    std::cout << "\n3. Insert with r-value:\n";
+    container.insert(1, TestObject("Object 3"));
+
+    std::cout << "\n4. Testing move constructor:\n";
+    SequentialContainer<TestObject> container2 = std::move(container);
+
+    std::cout << "\n5. Testing move assignment:\n";
+    SequentialContainer<TestObject> container3;
+    container3 = std::move(container2);
+
+    std::cout << "\nContainer contents (" << container3.size() << " elements):\n";
+    for (size_t i = 0; i < container3.size(); ++i)
+        std::cout << "  Element " << i << ": " << container3[i] << "\n";
+
+    std::cout << "\n===================================================\n";
+}
+
+inline void demonstrateListMoveSemantics()
+{
+    std::cout << "\n========== LIST MOVE SEMANTICS DEMONSTRATION ==========\n";
+
+    std::cout << "\n--- SinglyLinkedList with move ---\n";
+    SinglyLinkedList<TestObject> singlyList;
+    singlyList.push_back(TestObject("Singly 1"));
+    singlyList.push_front(TestObject("Singly 2"));
+
+    SinglyLinkedList<TestObject> singlyList2 = std::move(singlyList);
+
+    std::cout << "\n--- DoublyLinkedList with move ---\n";
+    DoublyLinkedList<TestObject> doublyList;
+    doublyList.push_back(TestObject("Doubly 1"));
+    doublyList.push_front(TestObject("Doubly 2"));
+
+    DoublyLinkedList<TestObject> doublyList2 = std::move(doublyList);
+
+    std::cout << "\n=======================================================\n";
+}
+
 // Function for displaying the menu
 inline void showMenu()
 {
@@ -130,7 +260,8 @@ inline void showMenu()
     std::cout << "1. Test Sequential Container (with capacity growth)\n";
     std::cout << "2. Test Doubly Linked List\n";
     std::cout << "3. Test Singly Linked List\n";
-    std::cout << "4. Exit\n";
+    std::cout << "4. Demonstrate Move Semantics\n";
+    std::cout << "5. Exit\n";
     std::cout << "===================================================\n";
     std::cout << "Enter your choice: ";
 }

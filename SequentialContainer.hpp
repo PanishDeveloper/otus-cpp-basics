@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <utility>
 
 // Template class for sequential container.
 // Stores elements contiguously in memory
@@ -20,8 +21,63 @@ public:
 
     ~SequentialContainer() { delete[] m_data; }
 
-    SequentialContainer(const SequentialContainer&) = delete;
-    SequentialContainer& operator=(const SequentialContainer&) = delete;
+    SequentialContainer(const SequentialContainer& other) : m_data(nullptr), m_size(0), m_capacity(0)
+    {
+        if (other.m_size > 0)
+        {
+            reserve(other.m_capacity);
+            for (size_t i = 0; i < other.m_size; ++i)
+                m_data[i] = other.m_data[i];
+            m_size = other.m_size;
+        }
+    }
+
+    // Move constructor
+    SequentialContainer(SequentialContainer&& other) noexcept
+                                            : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity)
+    {
+        std::cout << "[CONTAINER] Move constructor called\n";
+        other.m_data = nullptr;
+        other.m_size = 0;
+        other.m_capacity = 0;
+    }
+
+    SequentialContainer& operator=(const SequentialContainer& other)
+    {
+        if (this != &other)
+        {
+            SequentialContainer temp(other);
+            swap(temp);
+        }
+
+        return *this;
+    }
+
+    // Move assignment operator
+    SequentialContainer& operator=(SequentialContainer&& other) noexcept
+    {
+        std::cout << "[CONTAINER] Move assignment called\n";
+        if (this != &other)
+        {
+            delete[] m_data;
+
+            m_data = other.m_data;
+            m_size = other.m_size;
+            m_capacity = other.m_capacity;
+
+            other.m_data = nullptr;
+            other.m_size = 0;
+            other.m_capacity = 0;
+        }
+        return *this;
+    }
+
+    void swap(SequentialContainer& other) noexcept
+    {
+        std::swap(m_data, other.m_data);
+        std::swap(m_size, other.m_size);
+        std::swap(m_capacity, other.m_capacity);
+    }
 
     // PUSH_BACK METHOD . Adds element to the end
     void push_back(const T& value)
@@ -32,6 +88,17 @@ public:
             reserve(new_capacity);
         }
         m_data[m_size++] = value;
+    }
+
+    // PUSH_BACK METHOD. For r-value
+    void push_back(T&& value)
+    {
+        if (m_size == m_capacity)
+        {
+            size_t new_capacity = calculate_growth(m_capacity);
+            reserve(new_capacity);
+        }
+        m_data[m_size++] = std::move(value);
     }
 
     // ADDED: Calculate new capacity with growth factor
@@ -80,6 +147,25 @@ public:
             m_data[i] = std::move(m_data[i - 1]);
 
         m_data[index] = value;
+        ++m_size;
+    }
+
+    // INSERT METHOD. For r-value
+    void insert(size_t index, T&& value)
+    {
+        if (index > m_size)
+            throw std::out_of_range("Index out of range");
+
+        if (m_size == m_capacity)
+        {
+            size_t new_capacity = calculate_growth(m_capacity);
+            reserve(new_capacity);
+        }
+
+        for (size_t i = m_size; i > index; --i)
+            m_data[i] = std::move(m_data[i - 1]);
+
+        m_data[index] = std::move(value);
         ++m_size;
     }
 

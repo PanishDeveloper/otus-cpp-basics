@@ -3,6 +3,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <utility>
 
 // Template class for singly linked lis
 // Elements are not contiguous in memory
@@ -13,8 +14,47 @@ public:
     SinglyLinkedList() : m_head(nullptr), m_size(0) {}
     ~SinglyLinkedList() { clear(); }
 
-    SinglyLinkedList(const SinglyLinkedList&) = delete;
-    SinglyLinkedList& operator=(const SinglyLinkedList&) = delete;
+    SinglyLinkedList(const SinglyLinkedList& other) : m_head(nullptr), m_size(0)
+    {
+        Node* current = other.m_head;
+        while (current)
+        {
+            push_back(current->data);
+            current = current->next;
+        }
+    }
+
+    // Move constructor
+    SinglyLinkedList(SinglyLinkedList&& other) noexcept : m_head(nullptr), m_size(0)
+    {
+        swap(other);
+    }
+
+    SinglyLinkedList& operator=(const SinglyLinkedList& other)
+    {
+        if (this != &other)
+        {
+            SinglyLinkedList temp(other);
+            swap(temp);
+        }
+
+        return *this;
+    }
+
+    // Move assignment operator
+    SinglyLinkedList& operator=(SinglyLinkedList&& other) noexcept
+    {
+        if (this != &other)
+            swap(other);
+
+        return *this;
+    }
+
+    void swap(SinglyLinkedList& other) noexcept
+    {
+        std::swap(m_head, other.m_head);
+        std::swap(m_size, other.m_size);
+    }
 
     // Method for getting the list type
     [[nodiscard]] std::string get_type() const { return "SinglyLinkedList"; }
@@ -37,10 +77,38 @@ public:
         ++m_size;
     }
 
+    // PUSH_BACK METHOD. For r-value
+    void push_back(T&& value)
+    {
+        Node* new_node = new Node(std::move(value));
+
+        if (m_head == nullptr)
+            m_head = new_node;
+        else
+        {
+            Node* current = m_head;
+            while (current->next != nullptr) { current = current->next; }
+
+            current->next = new_node;
+        }
+
+        ++m_size;
+    }
+
     // PUSH_FRONT METHOD. Adds element to the beginning O(1)
     void push_front(const T& value)
     {
         Node* new_node = new Node(value);
+        new_node->next = m_head;
+        m_head = new_node;
+
+        ++m_size;
+    }
+
+    // PUSH_FRONT METHOD. For r-value
+    void push_front(T&& value)
+    {
+        Node* new_node = new Node(std::move(value));
         new_node->next = m_head;
         m_head = new_node;
 
@@ -64,6 +132,29 @@ public:
             current = current->next;
 
         Node* new_node = new Node(value);
+        new_node->next = current->next;
+        current->next = new_node;
+
+        ++m_size;
+    }
+
+    // INSERT NETHOD. For r-value
+    void insert(size_t index, T&& value)
+    {
+        if (index > m_size)
+            throw std::out_of_range("Index out of range");
+
+        if (index == 0)
+        {
+            push_front(value);
+            return;
+        }
+
+        Node* current = m_head;
+        for (size_t i = 0; i < index - 1; ++i)
+            current = current->next;
+
+        Node* new_node = new Node(std::move(value));
         new_node->next = current->next;
         current->next = new_node;
 
@@ -151,6 +242,7 @@ private:
         Node* next;
 
         explicit Node(const T& value) : data(value), next(nullptr) {}
+        explicit Node(T&& value) : data(std::move(value)), next(nullptr) {}
     };
 
     Node* m_head;

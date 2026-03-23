@@ -1,7 +1,6 @@
 #include "demonstration.hpp"
 #include <limits>
 
-
 int main()
 {
     SequentialContainer<int> seqContainer;
@@ -16,7 +15,7 @@ int main()
         {
             std::cin.clear();
             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-            std::cout << "\nInvalid input! Please enter 1 - 4.\n";
+            std::cout << "\nInvalid input! Please enter 1 - 5.\n";
             continue;
         }
 
@@ -32,13 +31,17 @@ int main()
                 testContainer(singlyList, "SINGLY LINKED LIST");
                 break;
             case 4:
+                demonstrateMoveSemantics();
+                demonstrateListMoveSemantics();
+                break;
+            case 5:
                 std::cout << "\nExiting program. Goodbye!\n";
                 break;
         default:
-                std::cout << "\nInvalid input! Please enter 1 - 4.\n";
+                std::cout << "\nInvalid input! Please enter 1 - 5.\n";
         }
 
-    } while (choice != 4);
+    } while (choice != 5);
 
     return 0;
 }
