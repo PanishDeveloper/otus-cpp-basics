@@ -10,6 +10,22 @@
 template <typename T>
 class DoublyLinkedList
 {
+private:
+    // STRUCT NODE
+    struct Node
+    {
+        T data;
+        Node* next;
+        Node* prev;
+
+        explicit Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
+        explicit Node(T&& value) : data(std::move(value)), next(nullptr), prev(nullptr) {}
+    };
+
+    Node* m_head;
+    Node* m_tail;
+    size_t m_size;
+
 public:
     DoublyLinkedList() : m_head(nullptr), m_tail(nullptr), m_size(0) {}
     ~DoublyLinkedList() { clear(); }
@@ -159,7 +175,7 @@ public:
         ++m_size;
     }
 
-    // INSERT NETHOD. For r-value
+    // INSERT METHOD. For r-value
     void insert(size_t index, T&& value)
     {
         if (index > m_size)
@@ -263,19 +279,34 @@ public:
         return current->data;
     }
 
-private:
-    // STRUCT NODE
-    struct Node
+    // ITERATORS
+    class iterator
     {
-        T data;
-        Node* next;
-        Node* prev;
+    private:
+        Node* m_node;
 
-        explicit Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
-        explicit Node(T&& value) : data(std::move(value)), next(nullptr), prev(nullptr) {}
+    public:
+        iterator() : m_node(nullptr) {}
+        explicit iterator(Node* node) : m_node(node) {}
+
+        // operator*() - dereference operator
+        T& operator*() { return m_node->data; }
+        const T& operator*() const { return m_node->data; }
+
+        // get() - method to get value
+        T& get() { return m_node->data; }
+        const T& get() const { return m_node->data; }
+
+        iterator& operator++() { m_node = m_node->next; return *this; }
+        iterator operator++(int) { iterator tmp = *this; m_node = m_node->next; return tmp; }
+
+        iterator& operator--() { m_node = m_node->prev; return *this; }
+        iterator operator--(int) { iterator tmp = *this; m_node = m_node->prev; return tmp; }
+
+        bool operator==(const iterator& other) const { return m_node == other.m_node; }
+        bool operator!=(const iterator& other) const { return m_node != other.m_node; }
     };
 
-    Node* m_head;
-    Node* m_tail;
-    size_t m_size;
+    iterator begin() { return iterator(m_head); }
+    iterator end() { return iterator(nullptr); }
 };

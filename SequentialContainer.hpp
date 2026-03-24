@@ -9,10 +9,15 @@
 template <typename T>
 class SequentialContainer
 {
+private:
+    T* m_data;
+    size_t m_size;
+    size_t m_capacity;
+
 public:
     SequentialContainer() : m_data(nullptr), m_size(0), m_capacity(0) {}
 
-    // Constructor with initial capacility
+    // Constructor with initial capacity
     explicit SequentialContainer(size_t initial_capacity) : m_data(nullptr), m_size(0), m_capacity(0)
     {
         if (initial_capacity > 0)
@@ -202,7 +207,7 @@ public:
         --m_size;
     }
 
-    // SIZE MEHOD. Returns current number of elements
+    // SIZE METHOD. Returns current number of elements
     [[nodiscard]]size_t size() const { return m_size; }
 
     // CLEAR METHOD. Removes all elements
@@ -220,7 +225,7 @@ public:
     // CAPACITY METHOD. Returns allocated memory size
     [[nodiscard]]size_t capacity() const { return m_capacity; }
 
-    // ADDED: Method to show memory efficience
+    // ADDED: Method to show memory efficiency
     [[nodiscard]]double load_factor() const { return m_capacity == 0 ? 1.0 : static_cast<double>(m_size) / m_capacity; }
 
     // INDEX OPERATOR. Access by index (non - const)
@@ -239,8 +244,31 @@ public:
         return m_data[index];
     }
 
-private:
-    T* m_data;
-    size_t m_size;
-    size_t m_capacity;
+    // ITERATORS
+    class iterator
+    {
+    private:
+        T* m_ptr;
+
+    public:
+        iterator() : m_ptr(nullptr) {}
+        explicit iterator(T* ptr) : m_ptr(ptr) {}
+
+        // operator*() - dereference operator
+        T& operator*() { return *m_ptr; }
+        const T& operator*() const { return *m_ptr; }
+
+        // get() - method to get value
+        T& get() { return *m_ptr; }
+        const T& get() const { return *m_ptr; }
+
+        iterator& operator++() { ++m_ptr; return *this; }
+        iterator operator++(int) { iterator tmp = *this; ++m_ptr; return tmp; }
+
+        bool operator==(const iterator& other) const { return m_ptr == other.m_ptr; }
+        bool operator!=(const iterator& other) const { return m_ptr != other.m_ptr; }
+    };
+
+    iterator begin() { return iterator(m_data); }
+    iterator end() { return iterator(m_data + m_size); }
 };

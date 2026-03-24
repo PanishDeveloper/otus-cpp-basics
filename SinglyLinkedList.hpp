@@ -5,11 +5,25 @@
 #include <string>
 #include <utility>
 
-// Template class for singly linked lis
+// Template class for singly linked list
 // Elements are not contiguous in memory
 template <typename T>
 class SinglyLinkedList
 {
+private:
+    // STRUCT NODE
+    struct Node
+    {
+        T data;
+        Node* next;
+
+        explicit Node(const T& value) : data(value), next(nullptr) {}
+        explicit Node(T&& value) : data(std::move(value)), next(nullptr) {}
+    };
+
+    Node* m_head;
+    size_t m_size;
+
 public:
     SinglyLinkedList() : m_head(nullptr), m_size(0) {}
     ~SinglyLinkedList() { clear(); }
@@ -115,7 +129,7 @@ public:
         ++m_size;
     }
 
-    // INSERT NETHOD. Inserts element at specified position
+    // INSERT METHOD. Inserts element at specified position
     void insert(size_t index, const T& value)
     {
         if (index > m_size)
@@ -234,17 +248,31 @@ public:
         return current->data;
     }
 
-private:
-    // STRUCT NODE
-    struct Node
+    // ITERATORS
+    class iterator
     {
-        T data;
-        Node* next;
+    private:
+        Node* m_node;
 
-        explicit Node(const T& value) : data(value), next(nullptr) {}
-        explicit Node(T&& value) : data(std::move(value)), next(nullptr) {}
+    public:
+        iterator() : m_node(nullptr) {}
+        explicit iterator(Node* node) : m_node(node) {}
+
+        // operator*() - dereference operator
+        T& operator*() { return m_node->data; }
+        const T& operator*() const { return m_node->data; }
+
+        // get() - method to get value
+        T& get() { return m_node->data; }
+        const T& get() const { return m_node->data; }
+
+        iterator& operator++() { m_node = m_node->next; return *this; }
+        iterator operator++(int) { iterator tmp = *this; m_node = m_node->next; return tmp; }
+
+        bool operator==(const iterator& other) const { return m_node == other.m_node; }
+        bool operator!=(const iterator& other) const { return m_node != other.m_node; }
     };
 
-    Node* m_head;
-    size_t m_size;
+    iterator begin() { return iterator(m_head); }
+    iterator end() { return iterator(nullptr); }
 };

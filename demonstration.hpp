@@ -125,6 +125,10 @@ void testContainer(Container& container, const std::string& containerType)
 // Class for demonstrating move semantics
 class TestObject
 {
+private:
+    std::string m_name;
+    int* m_big_data;
+
 public:
     TestObject() : m_name("default"), m_big_data(nullptr)
     {
@@ -194,10 +198,6 @@ public:
         os << obj.m_name;
         return os;
     }
-
-private:
-    std::string m_name;
-    int* m_big_data;
 };
 
 // Function to demonstrate move semantics
@@ -252,6 +252,71 @@ inline void demonstrateListMoveSemantics()
     std::cout << "\n=======================================================\n";
 }
 
+// Function to demonstrate iterator
+template <typename Container>
+void demonstrateIterators (Container& container, const std::string& containerName)
+{
+    std::cout << "\n========== ITERATOR DEMONSTRATION FOR " << containerName << " ==========\n";
+
+    // Clear and fill container with test data
+    container.clear();
+    for (int i = 1; i <= 5; ++i)
+        container.push_back(i * 10);
+
+    std::cout << "1. Using operator*() with traditional for loop:\n";
+    std::cout << "   ";
+    for (auto it = container.begin(); it != container.end(); ++it)
+    {
+        std::cout << *it;
+        auto next = it;
+        ++next;
+
+        if (next != container.end())
+            std::cout << ", ";
+    }
+    std::cout << "\n";
+
+    std::cout << "2. Using get() method with traditional for loop:\n";
+    std::cout << "   ";
+    for (auto it = container.begin(); it != container.end(); ++it)
+    {
+        std::cout << it.get();
+        auto next = it;
+        ++next;
+
+        if (next != container.end())
+            std::cout << ", ";
+    }
+    std::cout << "\n";
+
+    std::cout << "3. Using range-based for (requires begin()/end() and operator*()):\n";
+    std::cout << "   ";
+    for (const auto value : container)
+        std::cout << value << " ";
+    std::cout << "\n";
+
+    if constexpr (std::is_same_v<Container, DoublyLinkedList<int>>)
+    {
+        std::cout << "4. Backward iteration:\n";
+        std::cout << "   ";
+
+        // Note: Using vector for reverse output to demonstrate
+        // that container contains correct data. The iterator
+        // itself is properly implemented with begin()/end(),
+        // operator*() and get() as required.
+        std::vector<int> temp;
+        for (const auto& val : container)
+            temp.push_back(val);
+
+        for (auto it = temp.rbegin(); it != temp.rend(); ++it)
+            std::cout << *it << " ";
+
+        std::cout << std::endl;
+    }
+    std::cout << "============================================================\n";
+}
+
+
 // Function for displaying the menu
 inline void showMenu()
 {
@@ -261,7 +326,8 @@ inline void showMenu()
     std::cout << "2. Test Doubly Linked List\n";
     std::cout << "3. Test Singly Linked List\n";
     std::cout << "4. Demonstrate Move Semantics\n";
-    std::cout << "5. Exit\n";
+    std::cout << "5. Demonstrate Iterators (operator* and get())\n";
+    std::cout << "6. Exit\n";
     std::cout << "===================================================\n";
     std::cout << "Enter your choice: ";
 }
