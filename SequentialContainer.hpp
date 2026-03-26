@@ -10,15 +10,15 @@ template <typename T>
 class SequentialContainer
 {
 private:
-    T* m_data;
-    size_t m_size;
-    size_t m_capacity;
+    T* m_data{};
+    size_t m_size{};
+    size_t m_capacity{};
 
 public:
-    SequentialContainer() : m_data(nullptr), m_size(0), m_capacity(0) {}
+    SequentialContainer() = default;
 
     // Constructor with initial capacity
-    explicit SequentialContainer(size_t initial_capacity) : m_data(nullptr), m_size(0), m_capacity(0)
+    explicit SequentialContainer(size_t initial_capacity)
     {
         if (initial_capacity > 0)
             reserve(initial_capacity);
