@@ -39,12 +39,11 @@ public:
 
     // Move constructor
     SequentialContainer(SequentialContainer&& other) noexcept
-                                            : m_data(other.m_data), m_size(other.m_size), m_capacity(other.m_capacity)
+                                            : m_data(std::exchange(other.m_data, nullptr)),
+                                              m_size(std::exchange(other.m_size, 0)),
+                                              m_capacity(std::exchange(other.m_capacity, 0))
     {
         std::cout << "[CONTAINER] Move constructor called\n";
-        other.m_data = nullptr;
-        other.m_size = 0;
-        other.m_capacity = 0;
     }
 
     SequentialContainer& operator=(const SequentialContainer& other)
@@ -66,13 +65,9 @@ public:
         {
             delete[] m_data;
 
-            m_data = other.m_data;
-            m_size = other.m_size;
-            m_capacity = other.m_capacity;
-
-            other.m_data = nullptr;
-            other.m_size = 0;
-            other.m_capacity = 0;
+            m_data = std::exchange(other.m_data, nullptr);
+            m_size = std::exchange(other.m_size, 0);
+            m_capacity = std::exchange(other.m_capacity, 0);
         }
         return *this;
     }

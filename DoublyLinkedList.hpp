@@ -15,11 +15,11 @@ private:
     struct Node
     {
         T data;
-        Node* next;
-        Node* prev;
+        Node* next{};
+        Node* prev{};
 
-        explicit Node(const T& value) : data(value), next(nullptr), prev(nullptr) {}
-        explicit Node(T&& value) : data(std::move(value)), next(nullptr), prev(nullptr) {}
+        explicit Node(const T& value) : data(value) {}
+        explicit Node(T&& value) : data(std::move(value)) {}
     };
 
     Node* m_head;
@@ -183,13 +183,13 @@ public:
 
         if (index == m_size)
         {
-            push_back(value);
+            push_back(std::move(value));
             return;
         }
 
         if (index == 0)
         {
-            push_front(value);
+            push_front(std::move(value));
             return;
         }
 
