@@ -122,3 +122,55 @@ TEST(VectorTest, EmptyContainer)
     EXPECT_TRUE(v.empty());
 }
 
+// 11. Copy container
+TEST(VectorTest, CopyConstructor)
+{
+    std::vector<int> original = {10, 20, 30, 40, 50};
+    std::vector<int> copy(original);
+
+    EXPECT_EQ(copy.size(), original.size());
+    for (size_t i = 0; i < original.size(); ++i)
+        EXPECT_EQ(copy[i], original[i]);
+
+    original[0] = 999;
+    EXPECT_EQ(copy[0], 10);
+
+    copy[1] = 888;
+    EXPECT_EQ(original[1], 20);
+}
+
+// 12. Copy assignment operator
+TEST(VectorTest, CopyAssignmentOperator)
+{
+    std::vector<int> original = {100, 200, 300};
+    std::vector<int> copy;
+    copy = original;
+
+    EXPECT_EQ(copy.size(), original.size());
+    EXPECT_EQ(copy[0], 100);
+    EXPECT_EQ(copy[1], 200);
+    EXPECT_EQ(copy[2], 300);
+
+    original[1] = 999;
+    EXPECT_EQ(copy[1], 200);
+}
+
+// 13. Copy assignment with existing data
+TEST(VectorTest, CopyAssignmentWithExistingData)
+{
+    std::vector<int> original = {1, 2, 3};
+
+    std::vector<int> copy = {10, 20, 30, 40, 50};
+
+    copy = original;
+
+    EXPECT_EQ(copy.size(), 3);
+    EXPECT_EQ(copy[0], 1);
+    EXPECT_EQ(copy[1], 2);
+    EXPECT_EQ(copy[2], 3);
+
+    EXPECT_EQ(original.size(), 3);
+    EXPECT_EQ(original[0], 1);
+}
+
+

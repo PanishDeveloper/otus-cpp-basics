@@ -147,3 +147,82 @@ TEST(ListTest, EmptyContainer)
     l.pop_back();
     EXPECT_TRUE(l.empty());
 }
+
+// 11. Copy container
+TEST(ListTest, CopyConstructor)
+{
+    std::list<int> original = {10, 20, 30, 40, 50};
+    std::list<int> copy(original);
+
+    EXPECT_EQ(copy.size(), original.size());
+
+    auto it_orig = original.begin();
+    auto it_copy = copy.begin();
+    while (it_orig != original.end() && it_copy != copy.end())
+    {
+        EXPECT_EQ(*it_copy, *it_orig);
+        ++it_orig;
+        ++it_copy;
+    }
+
+    *original.begin() = 999;
+    EXPECT_EQ(*copy.begin(), 10);
+
+    auto it_copy_second = copy.begin();
+    ++it_copy_second;
+    *it_copy_second = 888;
+
+    auto  it_orig_second = original.begin();
+    ++it_orig_second;
+    EXPECT_EQ(*it_orig_second, 20);
+}
+
+// 12. Copy assignment operator
+TEST(ListTest, CopyAssignmentOperator)
+{
+    std::list<int> original = {100, 200, 300};
+
+    std::list<int> copy;
+    copy= original;
+
+    EXPECT_EQ(copy.size(), original.size());
+
+    auto it_orig = original.begin();
+    auto it_copy = copy.begin();
+    EXPECT_EQ(*it_copy, 100);
+    ++it_copy;
+    ++it_orig;
+    EXPECT_EQ(*it_copy, 200);
+    ++it_copy;
+    ++it_orig;
+    EXPECT_EQ(*it_copy, 300);
+
+    auto it_orig_second = original.begin();
+    ++it_orig_second;
+    *it_orig_second = 999;
+
+    auto it_copy_second = copy.begin();
+    ++it_copy_second;
+    EXPECT_EQ(*it_copy_second, 200);
+}
+
+// 13. Copy assignment with existing data
+TEST(ListTest, CopyAssignmentWithExistingData)
+{
+    std::list<int> original = {1, 2, 3};
+
+    std::list<int> copy = {10, 20, 30, 40, 50};
+
+    copy = original;
+
+    EXPECT_EQ(copy.size(), 3);
+
+    auto it_copy = copy.begin();
+    EXPECT_EQ(*it_copy, 1); ++it_copy;
+    EXPECT_EQ(*it_copy, 2); ++it_copy;
+    EXPECT_EQ(*it_copy, 3); ++it_copy;
+
+    EXPECT_EQ(original.size(), 3);
+    auto it_orig = original.begin();
+    EXPECT_EQ(*it_orig, 1);
+}
