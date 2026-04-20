@@ -6,8 +6,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(GTest REQUIRED)
 
+include(CTest)
+include(GoogleTest)
+
 add_executable(containers_tests
         tests/vector_tests.cpp
         tests/list_tests.cpp)
 
 target_link_libraries(containers_tests PRIVATE GTest::gtest_main)
+
+gtest_discover_tests(containers_tests)
