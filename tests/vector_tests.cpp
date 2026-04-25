@@ -122,6 +122,7 @@ TEST(VectorTest, EmptyContainer)
     v.pop_back();
     EXPECT_TRUE(v.empty());
 }
+// COPY CONTAINER
 
 // 11. Copy container
 TEST(VectorTest, CopyConstructor)
@@ -186,7 +187,7 @@ protected:
     void TearDown() override { EXPECT_EQ(TestCounter::get_alive(), 0); }
 };
 
-// 1. Destructor called on clear()
+// 14. Destructor called on clear()
 TEST_F(VectorDestructorTests, Clear)
 {
     std::vector<TestCounter> v;
@@ -203,7 +204,7 @@ TEST_F(VectorDestructorTests, Clear)
     EXPECT_EQ(TestCounter::get_destructor(), 3);
 }
 
-// 2. Destructor called on pop_back()
+// 15. Destructor called on pop_back()
 TEST_F(VectorDestructorTests, PopBack)
 {
     std::vector<TestCounter> v;
@@ -220,7 +221,7 @@ TEST_F(VectorDestructorTests, PopBack)
     EXPECT_EQ(TestCounter::get_alive(), 2);
 }
 
-// 3. Destructor called on erase()
+// 16. Destructor called on erase()
 TEST_F(VectorDestructorTests, Erase)
 {
     std::vector<TestCounter> v;
@@ -238,7 +239,7 @@ TEST_F(VectorDestructorTests, Erase)
     EXPECT_EQ(TestCounter::get_alive(), 3);
 }
 
-// 4. Destructor called on resize() to smaller
+// 17. Destructor called on resize() to smaller
 TEST_F(VectorDestructorTests, ResizeSmaller)
 {
     std::vector<TestCounter> v;
@@ -254,7 +255,7 @@ TEST_F(VectorDestructorTests, ResizeSmaller)
     EXPECT_EQ(TestCounter::get_destructor(), 3);
 }
 
-// 5. Destructor called when vector goes out of scope
+// 18. Destructor called when vector goes out of scope
 TEST_F(VectorDestructorTests, OutOfScope)
 {
     {
@@ -268,4 +269,73 @@ TEST_F(VectorDestructorTests, OutOfScope)
 
     EXPECT_EQ(TestCounter::get_alive(), 0);
     EXPECT_EQ(TestCounter::get_destructor(), 2);
+}
+
+// MOVE CONTAINER
+
+// 19. Move assignment operator to empty container
+TEST(VectorTest, MoveAssignmentOperator)
+{
+    std::vector<int> original = {10, 20, 30, 40, 50};
+
+    int* original_data_ptr = original.data();
+
+    std::vector<int> moved_to;
+    moved_to = std::move(original);
+
+    EXPECT_EQ(moved_to.size(), 5);
+    EXPECT_EQ(moved_to[0], 10);
+    EXPECT_EQ(moved_to[1], 20);
+    EXPECT_EQ(moved_to[2], 30);
+    EXPECT_EQ(moved_to[3], 40);
+    EXPECT_EQ(moved_to[4], 50);
+
+    EXPECT_TRUE(original.empty());
+    EXPECT_EQ(original.size(), 0);
+
+    EXPECT_EQ(moved_to.data(), original_data_ptr);
+}
+
+// 20. Move assignment operator with existing data in target
+TEST(VectorTest, MoveAssignmentWithExistingData)
+{
+    std::vector<int> original = {100, 200, 300};
+
+    std::vector<int> moved_to = {1, 2, 3, 4, 5, 6, 7};
+
+    moved_to = std::move(original);
+
+    EXPECT_EQ(moved_to.size(), 3);
+    EXPECT_EQ(moved_to[0], 100);
+    EXPECT_EQ(moved_to[1], 200);
+    EXPECT_EQ(moved_to[2], 300);
+
+    EXPECT_TRUE(original.empty());
+    EXPECT_EQ(original.size(), 0);
+
+    original.push_back(99);
+    EXPECT_EQ(original.size(), 1);
+    EXPECT_EQ(original[0], 99);
+}
+
+// 21. Destructor called on move assignment
+TEST_F(VectorDestructorTests, MoveAssignment)
+{
+    std::vector<TestCounter> original;
+    original.reserve(2);
+    original.emplace_back(1);
+    original.emplace_back(2);
+
+    std::vector<TestCounter> moved_to;
+    moved_to.reserve(3);
+    moved_to.emplace_back(10);
+    moved_to.emplace_back(20);
+    moved_to.emplace_back(30);
+
+    EXPECT_EQ(TestCounter::get_alive(), 5);
+
+    moved_to = std::move(original);
+
+    EXPECT_EQ(TestCounter::get_destructor(), 3);
+    EXPECT_EQ(TestCounter::get_alive(), 2);
 }

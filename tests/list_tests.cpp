@@ -149,6 +149,8 @@ TEST(ListTest, EmptyContainer)
     EXPECT_TRUE(l.empty());
 }
 
+// COPY CONTAINER
+
 // 11. Copy container
 TEST(ListTest, CopyConstructor)
 {
@@ -240,7 +242,7 @@ protected:
     void TearDown() override { EXPECT_EQ(TestCounter::get_alive(), 0); }
 };
 
-// 1. Destructor called on clear()
+// 14. Destructor called on clear()
 TEST_F(ListDestructorTests, Clear)
 {
     std::list<TestCounter> l;
@@ -256,7 +258,7 @@ TEST_F(ListDestructorTests, Clear)
     EXPECT_EQ(TestCounter::get_destructor(), 3);
 }
 
-// 2. Destructor called on pop_back()
+// 15. Destructor called on pop_back()
 TEST_F(ListDestructorTests, PopBack)
 {
     std::list<TestCounter> l;
@@ -273,7 +275,7 @@ TEST_F(ListDestructorTests, PopBack)
     EXPECT_EQ(TestCounter::get_alive(), 2);
 }
 
-// 3. Destructor called on erase()
+// 16. Destructor called on erase()
 TEST_F(ListDestructorTests, Erase)
 {
     std::list<TestCounter> l;
@@ -293,7 +295,7 @@ TEST_F(ListDestructorTests, Erase)
     EXPECT_EQ(TestCounter::get_alive(), 3);
 }
 
-// 4. Destructor called on pop_front()
+// 17. Destructor called on pop_front()
 TEST_F(ListDestructorTests, PopFront)
 {
     std::list<TestCounter> l;
@@ -309,7 +311,7 @@ TEST_F(ListDestructorTests, PopFront)
     EXPECT_EQ(TestCounter::get_alive(), 2);
 }
 
-// 5. Destructor called when list goes out of scope
+// 18. Destructor called when list goes out of scope
 TEST_F(ListDestructorTests, OutOfScope)
 {
     {
@@ -323,4 +325,76 @@ TEST_F(ListDestructorTests, OutOfScope)
 
     EXPECT_EQ(TestCounter::get_alive(), 0);
     EXPECT_EQ(TestCounter::get_destructor(), 2);
+}
+
+// MOVE CONTAINER
+
+// 19. Move assignment operator to empty container
+TEST(ListTest, MoveAssignmentOperator)
+{
+    std::list<int> original = {10, 20, 30, 40, 50};
+
+    std::list<int> moved_to;
+    moved_to = std::move(original);
+
+    EXPECT_EQ(moved_to.size(), 5);
+    auto it = moved_to.begin();
+    EXPECT_EQ(*it, 10); ++it;
+    EXPECT_EQ(*it, 20); ++it;
+    EXPECT_EQ(*it, 30); ++it;
+    EXPECT_EQ(*it, 40); ++it;
+    EXPECT_EQ(*it, 50);
+
+    EXPECT_TRUE(original.empty());
+    EXPECT_EQ(original.size(), 0);
+
+    // Chack that original can be used after moving
+    original.push_back(99);
+    EXPECT_EQ(original.size(), 1);
+    EXPECT_EQ(original.front(), 99);
+}
+
+// 20. Move assignment operator with existing data in target
+TEST(ListTest, MoveAssignmentWithExistingData)
+{
+    std::list<int> original = {100, 200, 300};
+
+    std::list<int> moved_to = {1, 2, 3, 4, 5, 6, 7};
+
+    moved_to = std::move(original);
+
+    EXPECT_EQ(moved_to.size(), 3);
+    auto it = moved_to.begin();
+    EXPECT_EQ(*it, 100); ++it;
+    EXPECT_EQ(*it, 200); ++it;
+    EXPECT_EQ(*it, 300);
+
+    EXPECT_TRUE(original.empty());
+    EXPECT_EQ(original.size(), 0);
+
+    original.push_back(77);
+    EXPECT_EQ(original.size(), 1);
+    EXPECT_EQ(original.front(), 77);
+}
+
+// 21. Destructor called on move assignment
+TEST_F(ListDestructorTests, MoveAssignment)
+{
+    std::list<TestCounter> original;
+
+    original.emplace_back(1);
+    original.emplace_back(2);
+
+    std::list<TestCounter> moved_to;
+
+    moved_to.emplace_back(10);
+    moved_to.emplace_back(20);
+    moved_to.emplace_back(30);
+
+    EXPECT_EQ(TestCounter::get_alive(), 5);
+
+    moved_to = std::move(original);
+
+    EXPECT_EQ(TestCounter::get_destructor(), 3);
+    EXPECT_EQ(TestCounter::get_alive(), 2);
 }
