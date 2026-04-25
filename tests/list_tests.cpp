@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <list>
+#include "test_counter.h"
 
 // 1. Container creation
 TEST(ListTest, DefaultConstructor)
@@ -220,9 +221,106 @@ TEST(ListTest, CopyAssignmentWithExistingData)
     auto it_copy = copy.begin();
     EXPECT_EQ(*it_copy, 1); ++it_copy;
     EXPECT_EQ(*it_copy, 2); ++it_copy;
-    EXPECT_EQ(*it_copy, 3); ++it_copy;
+    EXPECT_EQ(*it_copy, 3);
 
     EXPECT_EQ(original.size(), 3);
     auto it_orig = original.begin();
-    EXPECT_EQ(*it_orig, 1);
+    EXPECT_EQ(*it_orig, 1); ++it_orig;
+    EXPECT_EQ(*it_orig, 2); ++it_orig;
+    EXPECT_EQ(*it_orig, 3);
+}
+
+// DESTRUCTOR TESTS
+
+// Fixture for destructor tests
+class ListDestructorTests : public ::testing::Test
+{
+protected:
+    void SetUp() override { TestCounter::reset_counts(); }
+    void TearDown() override { EXPECT_EQ(TestCounter::get_alive(), 0); }
+};
+
+// 1. Destructor called on clear()
+TEST_F(ListDestructorTests, Clear)
+{
+    std::list<TestCounter> l;
+    l.emplace_back(1);
+    l.emplace_back(2);
+    l.emplace_back(3);
+
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+
+    l.clear();
+
+    EXPECT_EQ(TestCounter::get_alive(), 0);
+    EXPECT_EQ(TestCounter::get_destructor(), 3);
+}
+
+// 2. Destructor called on pop_back()
+TEST_F(ListDestructorTests, PopBack)
+{
+    std::list<TestCounter> l;
+
+    l.emplace_back(10);
+    l.emplace_back(20);
+    l.emplace_back(30);
+
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+
+    l.pop_back();
+
+    EXPECT_EQ(TestCounter::get_destructor(), 1);
+    EXPECT_EQ(TestCounter::get_alive(), 2);
+}
+
+// 3. Destructor called on erase()
+TEST_F(ListDestructorTests, Erase)
+{
+    std::list<TestCounter> l;
+    l.emplace_back(1);
+    l.emplace_back(2);
+    l.emplace_back(3);
+    l.emplace_back(4);
+
+    EXPECT_EQ(TestCounter::get_alive(), 4);
+
+    auto it = l.begin();
+    ++it;
+    ++it;
+    l.erase(it);
+
+    EXPECT_EQ(TestCounter::get_destructor(), 1);
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+}
+
+// 4. Destructor called on pop_front()
+TEST_F(ListDestructorTests, PopFront)
+{
+    std::list<TestCounter> l;
+    l.emplace_back(100);
+    l.emplace_back(200);
+    l.emplace_back(300);
+
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+
+    l.pop_front();
+
+    EXPECT_EQ(TestCounter::get_destructor(), 1);
+    EXPECT_EQ(TestCounter::get_alive(), 2);
+}
+
+// 5. Destructor called when list goes out of scope
+TEST_F(ListDestructorTests, OutOfScope)
+{
+    {
+        std::list<TestCounter> l;
+
+        l.emplace_back(10);
+        l.emplace_back(20);
+
+        EXPECT_EQ(TestCounter::get_alive(), 2);
+    }
+
+    EXPECT_EQ(TestCounter::get_alive(), 0);
+    EXPECT_EQ(TestCounter::get_destructor(), 2);
 }

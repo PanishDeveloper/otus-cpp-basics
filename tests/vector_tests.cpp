@@ -1,5 +1,6 @@
 #include <gtest/gtest.h>
 #include <vector>
+#include "test_counter.h"
 
 // 1. Container creation
 TEST(VectorTest, DefaultConstructor)
@@ -171,6 +172,100 @@ TEST(VectorTest, CopyAssignmentWithExistingData)
 
     EXPECT_EQ(original.size(), 3);
     EXPECT_EQ(original[0], 1);
+    EXPECT_EQ(original[1], 2);
+    EXPECT_EQ(original[2], 3);
 }
 
+// DESTRUCTOR TESTS
 
+// Fixture for destructor tests
+class VectorDestructorTests : public ::testing::Test
+{
+protected:
+    void SetUp() override { TestCounter::reset_counts(); }
+    void TearDown() override { EXPECT_EQ(TestCounter::get_alive(), 0); }
+};
+
+// 1. Destructor called on clear()
+TEST_F(VectorDestructorTests, Clear)
+{
+    std::vector<TestCounter> v;
+    v.reserve(3);
+    v.emplace_back(1);
+    v.emplace_back(2);
+    v.emplace_back(3);
+
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+
+    v.clear();
+
+    EXPECT_EQ(TestCounter::get_alive(), 0);
+    EXPECT_EQ(TestCounter::get_destructor(), 3);
+}
+
+// 2. Destructor called on pop_back()
+TEST_F(VectorDestructorTests, PopBack)
+{
+    std::vector<TestCounter> v;
+     v.reserve(3);
+    v.emplace_back(10);
+    v.emplace_back(20);
+    v.emplace_back(30);
+
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+
+    v.pop_back();
+
+    EXPECT_EQ(TestCounter::get_destructor(), 1);
+    EXPECT_EQ(TestCounter::get_alive(), 2);
+}
+
+// 3. Destructor called on erase()
+TEST_F(VectorDestructorTests, Erase)
+{
+    std::vector<TestCounter> v;
+    v.reserve(4);
+    v.emplace_back(1);
+    v.emplace_back(2);
+    v.emplace_back(3);
+    v.emplace_back(4);
+
+    EXPECT_EQ(TestCounter::get_alive(), 4);
+
+    v.erase(v.begin() + 2);
+
+    EXPECT_EQ(TestCounter::get_destructor(), 1);
+    EXPECT_EQ(TestCounter::get_alive(), 3);
+}
+
+// 4. Destructor called on resize() to smaller
+TEST_F(VectorDestructorTests, ResizeSmaller)
+{
+    std::vector<TestCounter> v;
+    v.reserve(5);
+    for (int i = 1; i <= 5; ++i)
+        v.emplace_back(i);
+
+    EXPECT_EQ(TestCounter::get_alive(), 5);
+
+    v.resize(2);
+
+    EXPECT_EQ(TestCounter::get_alive(), 2);
+    EXPECT_EQ(TestCounter::get_destructor(), 3);
+}
+
+// 5. Destructor called when vector goes out of scope
+TEST_F(VectorDestructorTests, OutOfScope)
+{
+    {
+        std::vector<TestCounter> v;
+        v.reserve(2);
+        v.emplace_back(100);
+        v.emplace_back(200);
+
+        EXPECT_EQ(TestCounter::get_alive(), 2);
+    }
+
+    EXPECT_EQ(TestCounter::get_alive(), 0);
+    EXPECT_EQ(TestCounter::get_destructor(), 2);
+}
