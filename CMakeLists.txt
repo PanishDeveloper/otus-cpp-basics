@@ -1,18 +1,16 @@
-cmake_minimum_required(VERSION 4.0)
-
-project(ContainersTests)
+cmake_minimum_required(VERSION 3.7.2)
+project(crc32_crack CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(GTest REQUIRED)
+add_executable(crc32_crack main.cpp
+        CRC32.cpp
+        CRC32.hpp
+        IO.cpp
+        IO.hpp)
 
-include(CTest)
-include(GoogleTest)
-
-add_executable(containers_tests
-        tests/vector_tests.cpp
-        tests/list_tests.cpp)
-
-target_link_libraries(containers_tests PRIVATE GTest::gtest_main)
-
-gtest_discover_tests(containers_tests)
+if (MSVC)
+    target_compile_options(crc32_crack PUBLIC /W4)
+else ()
+    target_compile_options(crc32_crack PUBLIC -Wall -Wextra -Wpedantic -Wconversion -Wsign-conversion)
+endif ()
